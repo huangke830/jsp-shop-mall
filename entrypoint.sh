@@ -6,13 +6,12 @@ SOCKET=/run/mysqld/mysqld.sock
 PORT="${PORT:-8080}"
 
 mkdir -p /run/mysqld
-chown mysql:mysql /run/mysqld
 
 if [ ! -d "$DATADIR/mysql" ]; then
-  mariadb-install-db --user=mysql --datadir="$DATADIR" --auth-root-authentication-method=normal > /tmp/mariadb-install.log 2>&1
+  mariadb-install-db --datadir="$DATADIR" --auth-root-authentication-method=normal > /tmp/mariadb-install.log 2>&1
 fi
 
-mysqld_safe --user=mysql --datadir="$DATADIR" --socket="$SOCKET" --bind-address=127.0.0.1 > /tmp/mysqld.log 2>&1 &
+mysqld_safe --datadir="$DATADIR" --socket="$SOCKET" --bind-address=127.0.0.1 > /tmp/mysqld.log 2>&1 &
 
 echo "Waiting for MariaDB..."
 i=0
@@ -43,7 +42,7 @@ case "$TABLES" in
     ;;
 esac
 
-# Render 通过 PORT 环境变量指定监听端口
+# 平台通过 PORT 注入监听端口，未注入时用 8080
 sed -i "s/Connector port=\"8080\"/Connector port=\"${PORT}\"/" "$CATALINA_HOME/conf/server.xml"
 
 exec catalina.sh run
